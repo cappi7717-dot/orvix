@@ -10,7 +10,12 @@ export async function idbGet<T>(key: string): Promise<T | undefined> {
 }
 
 export async function idbSet(key: string, value: unknown): Promise<void> {
-  await setDoc(doc(db, COLLECTION, key), { value })
+  try {
+    await setDoc(doc(db, COLLECTION, key), { value })
+  } catch (err) {
+    console.error('Firestore save error:', err)
+    throw err
+  }
 }
 
 // Eski versiyada localStorage'da qolgan postlarni bir martalik ko'chirish uchun
