@@ -1,4 +1,4 @@
-export const ADMIN_USERNAME = 'boom'
+export const ADMIN_USERNAME = 'cappi7717'
 
 export function isAdminUsername(username: string | undefined | null): boolean {
   const admin = ADMIN_USERNAME.trim()

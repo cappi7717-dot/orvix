@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 import Avatar from './Avatar'
 
-type Mode = 'menu' | 'delete' | 'block' | 'create' | 'reports'
+// 'users' yangi rejim (mode) sifatida qo'shildi
+type Mode = 'menu' | 'delete' | 'block' | 'create' | 'reports' | 'users'
 
 interface AdminPanelModalProps {
   onClose: () => void
@@ -111,7 +112,9 @@ export default function AdminPanelModal({ onClose }: AdminPanelModalProps) {
           ? 'Foydalanuvchini bloklash'
           : mode === 'reports'
             ? 'Shikoyatlar'
-            : "Post qo'yish"
+            : mode === 'users'
+              ? "Foydalanuvchilar (Gmail)"
+              : "Post qo'yish"
 
   return createPortal(
     <div className="modal-overlay" onClick={handleClose}>
@@ -125,6 +128,11 @@ export default function AdminPanelModal({ onClose }: AdminPanelModalProps) {
 
         {mode === 'menu' && (
           <div className="admin-menu">
+            {/* Yangi tugma: Foydalanuvchilar Ro'yxati */}
+            <button type="button" className="admin-menu-btn" onClick={() => setMode('users')}>
+              <span>Foydalanuvchilar (Gmaillar)</span>
+              <span className="admin-menu-badge">{allUsers.length}</span>
+            </button>
             <button type="button" className="admin-menu-btn" onClick={() => setMode('delete')}>
               <span>Post o'chirish</span>
               <span className="admin-menu-btn-arrow">›</span>
@@ -149,9 +157,55 @@ export default function AdminPanelModal({ onClose }: AdminPanelModalProps) {
 
         {mode !== 'menu' && (
           <div className="admin-body">
-            <button type="button" className="btn-back" onClick={goMenu}>
+            <button type="button" className="btn-back" onClick={goMenu} style={{ marginBottom: '15px' }}>
               ← Orqaga
             </button>
+
+            {/* --- YANGI BO'LIM: Foydalanuvchilar va ularning gmaillari --- */}
+            {mode === 'users' && (
+              <div className="admin-users-list-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <p style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
+                  Jami a'zolar: <strong>{allUsers.length} ta</strong>
+                </p>
+                {allUsers.length === 0 ? (
+                  <p className="muted">Hozircha foydalanuvchilar yo'q</p>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #eee', color: '#555' }}>
+                        <th style={{ padding: '8px 4px' }}>Avatar</th>
+                        <th style={{ padding: '8px 4px' }}>Foydalanuvchi</th>
+                        <th style={{ padding: '8px 4px' }}>Gmail (Email)</th>
+                        <th style={{ padding: '8px 4px' }}>Holat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allUsers.map((u) => (
+                        <tr key={u.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                          <td style={{ padding: '8px 4px' }}>
+                            <Avatar username={u.username} size={30} avatarUrl={u.avatarUrl} />
+                          </td>
+                          <td style={{ padding: '8px 4px' }}>
+                            <div style={{ fontWeight: '500' }}>{u.name}</div>
+                            <div style={{ fontSize: '12px', color: '#888' }}>@{u.username}</div>
+                          </td>
+                          <td style={{ padding: '8px 4px', wordBreak: 'break-all' }}>
+                            <strong>{u.email || 'Kiritilmagan'}</strong>
+                          </td>
+                          <td style={{ padding: '8px 4px' }}>
+                            {u.blocked ? (
+                              <span className="admin-blocked-tag" style={{ margin: 0 }}>bloklangan</span>
+                            ) : (
+                              <span style={{ fontSize: '12px', color: '#2ecc71' }}>Faol</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
 
             {mode === 'reports' && (
               <div className="admin-reports-list">
@@ -219,7 +273,7 @@ export default function AdminPanelModal({ onClose }: AdminPanelModalProps) {
               </div>
             )}
 
-            {mode !== 'reports' && !selectedUser && (
+            {mode !== 'reports' && mode !== 'users' && !selectedUser && (
               <>
                 {mode === 'block' && blockedUsers.length > 0 && (
                   <div className="admin-blocked-section">
@@ -273,7 +327,7 @@ export default function AdminPanelModal({ onClose }: AdminPanelModalProps) {
               </>
             )}
 
-            {mode !== 'reports' && selectedUser && (
+            {mode !== 'reports' && mode !== 'users' && selectedUser && (
               <div className="admin-selected">
                 <div className="admin-selected-user">
                   <Avatar username={selectedUser.username} size={44} avatarUrl={selectedUser.avatarUrl} />
